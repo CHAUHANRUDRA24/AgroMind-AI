@@ -53,28 +53,110 @@ html {
   color: #f1f5f9 !important;
 }
 
+/* Base Light/Dark Typography overrides for high contrast */
+.dark .text-gray-950,
+.dark .text-slate-950,
 .dark .text-gray-900,
 .dark .text-gray-905,
 .dark .text-slate-900,
+.dark .text-slate-905,
 .dark .text-emerald-990 {
   color: #f8fafc !important;
 }
 
-.dark .text-gray-500,
-.dark .text-slate-500,
+.dark .text-gray-800,
+.dark .text-slate-800,
+.dark .text-zinc-800,
+.dark .text-gray-750,
+.dark .text-slate-755,
 .dark .text-gray-700,
 .dark .text-slate-705,
-.dark .text-slate-700 {
+.dark .text-slate-700,
+.dark .text-zinc-700 {
+  color: #cbd5e1 !important;
+}
+
+.dark .text-gray-600,
+.dark .text-slate-600,
+.dark .text-zinc-600,
+.dark .text-gray-500,
+.dark .text-slate-500,
+.dark .text-zinc-500 {
   color: #94a3b8 !important;
 }
 
+.dark .text-gray-400,
+.dark .text-slate-400,
+.dark .text-zinc-400 {
+  color: #64748b !important;
+}
+
+/* Core border color overrides in dark theme */
 .dark .border-slate-100,
 .dark .border-slate-150,
+.dark .border-slate-200,
+.dark .border-slate-250,
+.dark .border-slate-300,
+.dark .border-slate-200\/20,
+.dark .border-slate-200\/50,
+.dark .border-slate-200\/60,
+.dark .border-slate-200\/65,
+.dark .border-gray-55,
 .dark .border-gray-100,
 .dark .border-gray-150,
 .dark .border-gray-200,
-.dark .border-gray-250 {
+.dark .border-gray-250,
+.dark .border-gray-300 {
   border-color: #1e293b !important;
+}
+
+/* Background panel overrides */
+.dark .bg-slate-50,
+.dark .bg-gray-50,
+.dark .bg-zinc-50 {
+  background-color: #0b1329 !important;
+}
+
+.dark .bg-slate-50\/70,
+.dark .bg-slate-50\/50,
+.dark .bg-slate-50\/30,
+.dark .bg-slate-50\/40,
+.dark .bg-emerald-50\/10,
+.dark .bg-emerald-50\/20,
+.dark .bg-sky-50\/20,
+.dark .bg-sky-50\/40,
+.dark .bg-sky-50\/50,
+.dark .bg-red-50\/40,
+.dark .bg-amber-50\/40,
+.dark .bg-amber-50\/80 {
+  background-color: rgba(30, 41, 59, 0.45) !important;
+}
+
+.dark .bg-slate-100,
+.dark .bg-gray-100,
+.dark .bg-zinc-100,
+.dark .bg-slate-105 {
+  background-color: #1e293b !important;
+}
+
+.dark .bg-slate-200,
+.dark .bg-gray-200,
+.dark .bg-zinc-200,
+.dark .bg-slate-200\/60 {
+  background-color: #334155 !important;
+}
+
+/* Interaction and interactive UI components active/hover classes */
+.dark .hover\:bg-slate-50:hover,
+.dark .hover\:bg-gray-50:hover,
+.dark .hover\:bg-slate-50\/70:hover,
+.dark .hover\:bg-slate-50\/30:hover {
+  background-color: #162035 !important;
+}
+
+.dark .hover\:bg-slate-100:hover,
+.dark .hover\:bg-gray-100:hover {
+  background-color: #243552 !important;
 }
 
 .dark input, 
@@ -85,22 +167,65 @@ html {
   color: #f1f5f9 !important;
 }
 
-.dark .bg-slate-50 {
-  background-color: #0b1329 !important;
+.dark input::placeholder, 
+.dark textarea::placeholder {
+  color: #64748b !important;
 }
 
-.dark .bg-slate-100 {
-  background-color: #1e293b !important;
+/* Theme contrast adjustments for visual status badges */
+.dark .bg-emerald-50,
+.dark .bg-emerald-100 {
+  background-color: rgba(6, 78, 59, 0.35) !important;
+  color: #a7f3d0 !important;
+  border-color: rgba(52, 211, 153, 0.1) !important;
+}
+.dark .text-emerald-800,
+.dark .text-emerald-700,
+.dark .text-emerald-600 {
+  color: #34d399 !important;
 }
 
-.dark .text-slate-800 {
-  color: #cbd5e1 !important;
+.dark .bg-amber-50,
+.dark .bg-amber-100 {
+  background-color: rgba(120, 53, 4, 0.35) !important;
+  color: #fde68a !important;
+  border-color: rgba(251, 191, 36, 0.1) !important;
+}
+.dark .text-amber-800,
+.dark .text-amber-700,
+.dark .text-amber-600,
+.dark .text-orange-500 {
+  color: #fbcbf4 !important;
+  color: #fbbf24 !important;
 }
 
-.dark .hover\:bg-slate-50:hover {
-  background-color: #1e293b !important;
+.dark .bg-red-50,
+.dark .bg-red-100 {
+  background-color: rgba(153, 27, 27, 0.35) !important;
+  color: #fca5a5 !important;
+  border-color: rgba(248, 113, 113, 0.1) !important;
+}
+.dark .text-red-800,
+.dark .text-red-700,
+.dark .text-red-600 {
+  color: #f87171 !important;
 }
 
-.dark .bg-slate-50\/40 {
-  background-color: rgba(30, 41, 59, 0.4) !important;
+.dark .bg-sky-50,
+.dark .bg-sky-100,
+.dark .bg-blue-50,
+.dark .bg-blue-100,
+.dark .bg-cyan-100 {
+  background-color: rgba(30, 58, 138, 0.35) !important;
+  color: #bae6fd !important;
+  border-color: rgba(56, 189, 248, 0.1) !important;
+}
+.dark .text-sky-800,
+.dark .text-sky-700,
+.dark .text-sky-600,
+.dark .text-blue-800,
+.dark .text-blue-700,
+.dark .text-blue-600,
+.dark .text-cyan-800 {
+  color: #38bdf8 !important;
 }
