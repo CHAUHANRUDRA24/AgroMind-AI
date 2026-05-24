@@ -18,40 +18,172 @@ import {
 } from 'lucide-react';
 import { RecentScan } from '../types';
 import { jsPDF } from 'jspdf';
+import QRCode from 'qrcode';
+import { useEffect } from 'react';
 
 interface DiseaseDetectionViewProps {
   showToast?: (message: string, type: 'success' | 'info' | 'warning') => void;
 }
 
 export default function DiseaseDetectionView({ showToast }: DiseaseDetectionViewProps) {
-  const [recentDiagnoses, setRecentDiagnoses] = useState<RecentScan[]>([
-    {
-      id: 'diag-1',
-      crop: 'Tomato',
-      disease: 'Tomato Early Blight',
-      confidence: 94,
-      timeLabel: '2 hours ago',
-      imageUrl: 'https://lh3.googleusercontent.com/aida-public/AB6AXuB986n-NAmnAGi1-d-WyqiVtRuPEsLLE2utF-oh5ktxuwdTjR3-9dc9iCkZ5cXIoJrywEix_iOTMswmlA87NMtIrqClmFMfd_25y3c0J0KOEz2cEiHuHku44miI1jDXCgrN2gy7OD7yKVoVG2L4o83UhnDoehOmE4UVnXhdWL0J6Gj3mUeQ1IxqpJ9Uq25KuUuuIDiEOW7HXfrls1CflVIMXyzydyu-2xGUCBa6UlKDSJPlh3AAMwOUoi-afCsv9chwZ18vtQcJUEIH',
-      status: 'Requires Action',
-      symptoms: 'Long, anatomical leaf spotting with classic target-shaped concentric rings. Leaf yellowing starting on lower branches.',
-      treatment: ['Apply copper-based organic fungicides immediately.', 'Prune the lowest affected stems to prevent soil splash reinfection.', 'Avoid overhead splash watering.'],
-      prevention: ['Crop rotation of Solanaceae family', 'Hygiene tools sterilization', 'Mulching soil beds'],
-    },
-    {
-      id: 'diag-2',
-      crop: 'Corn',
-      disease: 'Healthy Corn',
-      confidence: 98,
-      timeLabel: 'Yesterday',
-      imageUrl: 'https://lh3.googleusercontent.com/aida-public/AB6AXuDvh6KsCqzHNaL12oRtI-87yP39o20v6HSJs6sG57L0BRvxvRri-VWtHRAm2vD9KAQBcY5LF_HZ9ZUNL_41ZurnJ4yss_MrjKx4t8H9GprRNTxUp-UqqW_FkdJFaiq3Xkte3FHItFAcbosEYN8iUhoRIq32PMbJ1__sVtyCt_Mx9M9rNJflU0AyoOPnVdPmV8fSNFxNGqSH3jz5cih8qfb06GkI1eAiUXtKMjCwbQXzydHt1pUuxqt8umvdqeTv36eq58GxJY6Mu2wI',
-      status: 'Healthy',
-      symptoms: 'Fully vibrant green leaf vein structure. No visible fungal plaques, chlorotic halos, or necrosis identified.',
-      treatment: ['Continue current baseline organic fertilizer scheduling.'],
-      prevention: ['Resistant maize hybrids pairing', 'Regular sensor calibrations'],
-    },
-  ]);
+  const [recentDiagnoses, setRecentDiagnoses] = useState<RecentScan[]>(() => {
+    const defaultDiagnoses: RecentScan[] = [
+      {
+        id: 'diag-1',
+        crop: 'Tomato',
+        disease: 'Tomato Early Blight',
+        confidence: 94,
+        timeLabel: '2 hours ago',
+        imageUrl: 'https://lh3.googleusercontent.com/aida-public/AB6AXuB986n-NAmnAGi1-d-WyqiVtRuPEsLLE2utF-oh5ktxuwdTjR3-9dc9iCkZ5cXIoJrywEix_iOTMswmlA87NMtIrqClmFMfd_25y3c0J0KOEz2cEiHuHku44miI1jDXCgrN2gy7OD7yKVoVG2L4o83UhnDoehOmE4UVnXhdWL0J6Gj3mUeQ1IxqpJ9Uq25KuUuuIDiEOW7HXfrls1CflVIMXyzydyu-2xGUCBa6UlKDSJPlh3AAMwOUoi-afCsv9chwZ18vtQcJUEIH',
+        status: 'Requires Action',
+        symptoms: 'Long, anatomical leaf spotting with classic target-shaped concentric rings. Leaf yellowing starting on lower branches.',
+        treatment: ['Apply copper-based organic fungicides immediately.', 'Prune the lowest affected stems to prevent soil splash reinfection.', 'Avoid overhead splash watering.'],
+        prevention: ['Crop rotation of Solanaceae family', 'Hygiene tools sterilization', 'Mulching soil beds'],
+      },
+      {
+        id: 'diag-2',
+        crop: 'Corn',
+        disease: 'Healthy Corn',
+        confidence: 98,
+        timeLabel: 'Yesterday',
+        imageUrl: 'https://lh3.googleusercontent.com/aida-public/AB6AXuDvh6KsCqzHNaL12oRtI-87yP39o20v6HSJs6sG57L0BRvxvRri-VWtHRAm2vD9KAQBcY5LF_HZ9ZUNL_41ZurnJ4yss_MrjKx4t8H9GprRNTxUp-UqqW_FkdJFaiq3Xkte3FHItFAcbosEYN8iUhoRIq32PMbJ1__sVtyCt_Mx9M9rNJflU0AyoOPnVdPmV8fSNFxNGqSH3jz5cih8qfb06GkI1eAiUXtKMjCwbQXzydHt1pUuxqt8umvdqeTv36eq58GxJY6Mu2wI',
+        status: 'Healthy',
+        symptoms: 'Fully vibrant green leaf vein structure. No visible fungal plaques, chlorotic halos, or necrosis identified.',
+        treatment: ['Continue current baseline organic fertilizer scheduling.'],
+        prevention: ['Resistant maize hybrids pairing', 'Regular sensor calibrations'],
+      },
+    ];
 
-  const [activeScan, setActiveScan] = useState<RecentScan | null>(recentDiagnoses[0]);
+    try {
+      const saved = localStorage.getItem('agromind-diagnoses');
+      if (saved) {
+        return JSON.parse(saved);
+      }
+    } catch (e) {
+      console.warn("Storage read failed:", e);
+    }
+    return defaultDiagnoses;
+  });
+
+  const [activeScan, setActiveScan] = useState<RecentScan | null>(null);
+
+  // Sync recentDiagnoses to localStorage
+  useEffect(() => {
+    try {
+      localStorage.setItem('agromind-diagnoses', JSON.stringify(recentDiagnoses));
+    } catch (e) {
+      console.warn("Storage write failed:", e);
+    }
+  }, [recentDiagnoses]);
+
+  // Deep Link Parser Effect on Mount
+  useEffect(() => {
+    try {
+      const params = new URLSearchParams(window.location.search);
+      const scanId = params.get('scanId');
+      if (scanId) {
+        const existing = recentDiagnoses.find(d => d.id === scanId);
+        if (existing) {
+          setActiveScan(existing);
+          return;
+        }
+
+        const crop = params.get('crop');
+        const disease = params.get('disease');
+        if (crop && disease) {
+          const confidence = parseInt(params.get('confidence') || '90', 10);
+          const statusParam = params.get('status');
+          const status: "Requires Action" | "Healthy" | "Reviewed" = 
+            (statusParam === 'Healthy' || statusParam === 'Reviewed') 
+              ? statusParam 
+              : 'Requires Action';
+          const symptoms = params.get('symptoms') || '';
+          
+          let treatment: string[] = [];
+          try {
+            const treatParam = params.get('treatment');
+            if (treatParam) treatment = JSON.parse(treatParam);
+          } catch {
+            treatment = [];
+          }
+
+          let prevention: string[] = [];
+          try {
+            const prevParam = params.get('prevention');
+            if (prevParam) prevention = JSON.parse(prevParam);
+          } catch {
+            prevention = [];
+          }
+
+          const decodedScan: RecentScan = {
+            id: scanId,
+            crop,
+            disease,
+            confidence,
+            timeLabel: 'Imported Report Link',
+            imageUrl: 'https://lh3.googleusercontent.com/aida-public/AB6AXuB986n-NAmnAGi1-d-WyqiVtRuPEsLLE2utF-oh5ktxuwdTjR3-9dc9iCkZ5cXIoJrywEix_iOTMswmlA87NMtIrqClmFMfd_25y3c0J0KOEz2cEiHuHku44miI1jDXCgrN2gy7OD7yKVoVG2L4o83UhnDoehOmE4UVnXhdWL0J6Gj3mUeQ1IxqpJ9Uq25KuUuuIDiEOW7HXfrls1CflVIMXyzydyu-2xGUCBa6UlKDSJPlh3AAMwOUoi-afCsv9chwZ18vtQcJUEIH',
+            status,
+            symptoms,
+            treatment,
+            prevention
+          };
+
+          setRecentDiagnoses(prev => {
+            if (prev.some(d => d.id === scanId)) return prev;
+            return [decodedScan, ...prev];
+          });
+          setActiveScan(decodedScan);
+          if (showToast) {
+            showToast(`Loaded diagnostic details link for ${disease}!`, 'success');
+          }
+          return;
+        }
+      }
+    } catch (e) {
+      console.warn("Deep linking offset parsing error", e);
+    }
+
+    if (!activeScan && recentDiagnoses.length > 0) {
+      setActiveScan(recentDiagnoses[0]);
+    }
+  }, []);
+
+  // Sync activeScan details into search parameters
+  useEffect(() => {
+    if (!activeScan) return;
+    try {
+      const url = new URL(window.location.href);
+      const params = new URLSearchParams(window.location.search);
+      const activeTab = params.get('tab') || 'dashboard';
+      if (activeTab === 'detection') {
+        url.searchParams.set('tab', 'detection');
+        url.searchParams.set('scanId', activeScan.id);
+        url.searchParams.set('crop', activeScan.crop);
+        url.searchParams.set('disease', activeScan.disease);
+        url.searchParams.set('confidence', String(activeScan.confidence));
+        url.searchParams.set('status', activeScan.status);
+        if (activeScan.symptoms) {
+          url.searchParams.set('symptoms', activeScan.symptoms);
+        } else {
+          url.searchParams.delete('symptoms');
+        }
+        if (activeScan.treatment && activeScan.treatment.length > 0) {
+          url.searchParams.set('treatment', JSON.stringify(activeScan.treatment));
+        } else {
+          url.searchParams.delete('treatment');
+        }
+        if (activeScan.prevention && activeScan.prevention.length > 0) {
+          url.searchParams.set('prevention', JSON.stringify(activeScan.prevention));
+        } else {
+          url.searchParams.delete('prevention');
+        }
+        window.history.replaceState({}, '', url.toString());
+      }
+    } catch (e) {
+      console.warn("Syncing activeScan to URL error", e);
+    }
+  }, [activeScan]);
+
   const [isScanning, setIsScanning] = useState(false);
   const [scanProgressLabel, setScanProgressLabel] = useState('');
   const [errorText, setErrorText] = useState('');
@@ -185,7 +317,7 @@ export default function DiseaseDetectionView({ showToast }: DiseaseDetectionView
     }, 1500);
   };
 
-  const downloadPDFReport = () => {
+  const downloadPDFReport = async () => {
     if (!activeScan) return;
 
     try {
@@ -226,6 +358,38 @@ export default function DiseaseDetectionView({ showToast }: DiseaseDetectionView
       doc.setLineWidth(0.5);
       doc.line(15, 54, 195, 54);
 
+      // Build Deep Link URL carrying serialized diagnostics
+      let qrDataUrl = '';
+      try {
+        const url = new URL(window.location.href);
+        url.searchParams.set('tab', 'detection');
+        url.searchParams.set('scanId', activeScan.id);
+        url.searchParams.set('crop', activeScan.crop);
+        url.searchParams.set('disease', activeScan.disease);
+        url.searchParams.set('confidence', String(activeScan.confidence));
+        url.searchParams.set('status', activeScan.status);
+        if (activeScan.symptoms) {
+          url.searchParams.set('symptoms', activeScan.symptoms);
+        }
+        if (activeScan.treatment && activeScan.treatment.length > 0) {
+          url.searchParams.set('treatment', JSON.stringify(activeScan.treatment));
+        }
+        if (activeScan.prevention && activeScan.prevention.length > 0) {
+          url.searchParams.set('prevention', JSON.stringify(activeScan.prevention));
+        }
+
+        qrDataUrl = await QRCode.toDataURL(url.toString(), {
+          margin: 1,
+          width: 150,
+          color: {
+            dark: '#0f172a', // Deep slate-900
+            light: '#ffffff'
+          }
+        });
+      } catch (qrErr) {
+        console.warn("Failed to generate QR Code offline data URL", qrErr);
+      }
+
       // Parameters Grid
       doc.setFontSize(11);
       doc.setFont('helvetica', 'bold');
@@ -254,10 +418,20 @@ export default function DiseaseDetectionView({ showToast }: DiseaseDetectionView
       doc.setFont('helvetica', 'normal');
       doc.text(activeScan.status, 60, 95);
 
+      // Render the QR code on the top-right sector if successfully compiled
+      if (qrDataUrl) {
+        doc.addImage(qrDataUrl, 'PNG', 152, 58, 33, 33);
+        doc.setFontSize(7);
+        doc.setTextColor(100, 116, 139); // Slate-500
+        doc.setFont('helvetica', 'bold');
+        doc.text('SCAN TO VERIFY LIVE', 153, 95);
+      }
+
       let currentY = 110;
 
       // Symptoms block
       if (activeScan.symptoms) {
+        doc.setTextColor(15, 23, 42);
         doc.setFont('helvetica', 'bold');
         doc.setFontSize(12);
         doc.text('Leaf Analysis Symptoms:', 15, currentY);

@@ -40,7 +40,35 @@ import FertilizerView from './components/FertilizerView';
 import AdvisoryView from './components/AdvisoryView';
 
 export default function App() {
-  const [activeTab, setActiveTab] = useState<ActiveTab>('dashboard');
+  const [activeTab, setActiveTab] = useState<ActiveTab>(() => {
+    try {
+      const params = new URLSearchParams(window.location.search);
+      const tabParam = params.get('tab');
+      if (tabParam && ['dashboard', 'detection', 'fertilizer', 'advisory', 'assistant', 'weather', 'irrigation', 'reports', 'profile', 'settings'].includes(tabParam)) {
+        return tabParam as ActiveTab;
+      }
+    } catch (e) {
+      console.warn("Parsing URL params error:", e);
+    }
+    return 'dashboard';
+  });
+
+  useEffect(() => {
+    const handlePopState = () => {
+      try {
+        const params = new URLSearchParams(window.location.search);
+        const tabParam = params.get('tab');
+        if (tabParam && ['dashboard', 'detection', 'fertilizer', 'advisory', 'assistant', 'weather', 'irrigation', 'reports', 'profile', 'settings'].includes(tabParam)) {
+          setActiveTab(tabParam as ActiveTab);
+        }
+      } catch (e) {
+        console.warn("Popstate sync error", e);
+      }
+    };
+    window.addEventListener('popstate', handlePopState);
+    return () => window.removeEventListener('popstate', handlePopState);
+  }, []);
+
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isAlertBannerVisible, setIsAlertBannerVisible] = useState(true);
 
@@ -264,6 +292,17 @@ export default function App() {
   const handleNavClick = (tabId: ActiveTab) => {
     setActiveTab(tabId);
     setIsMobileMenuOpen(false);
+    try {
+      const url = new URL(window.location.href);
+      url.searchParams.set('tab', tabId);
+      if (tabId !== 'detection') {
+        const paramsToDelete = ['scanId', 'crop', 'disease', 'confidence', 'status', 'symptoms', 'treatment', 'prevention'];
+        paramsToDelete.forEach(p => url.searchParams.delete(p));
+      }
+      window.history.replaceState({}, '', url.toString());
+    } catch (e) {
+      console.warn("History push error state", e);
+    }
   };
 
   // Render active component
