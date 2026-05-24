@@ -1,0 +1,6 @@
+{
+  "name": "AgroMind AI",
+  "description": "Precision Agriculture platform with crop health analytics, intelligent recommendations, real-time weather stats, and Gemini AI assistant.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
