@@ -608,9 +608,9 @@ export default function DashboardView({
                 </defs>
                 
                 {/* Horizontal reference grid lines */}
-                <line x1="0" y1={120 * 0.25} x2={480} y2={120 * 0.25} stroke="#f8fafc" strokeWidth="1" />
-                <line x1="0" y1={120 * 0.5} x2={480} y2={120 * 0.5} stroke="#f1f5f9" strokeWidth="1" strokeDasharray="3 3" />
-                <line x1="0" y1={120 * 0.75} x2={480} y2={120 * 0.75} stroke="#f8fafc" strokeWidth="1" />
+                <line x1="0" y1={120 * 0.25} x2={480} y2={120 * 0.25} stroke="rgba(148, 163, 184, 0.15)" strokeWidth="1" />
+                <line x1="0" y1={120 * 0.5} x2={480} y2={120 * 0.5} stroke="rgba(148, 163, 184, 0.15)" strokeWidth="1" strokeDasharray="3 3" />
+                <line x1="0" y1={120 * 0.75} x2={480} y2={120 * 0.75} stroke="rgba(148, 163, 184, 0.15)" strokeWidth="1" />
 
                 {/* Plot area */}
                 {(() => {

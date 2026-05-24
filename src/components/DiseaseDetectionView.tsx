@@ -17,6 +17,7 @@ import {
   CloudLightning
 } from 'lucide-react';
 import { RecentScan } from '../types';
+import { jsPDF } from 'jspdf';
 
 interface DiseaseDetectionViewProps {
   showToast?: (message: string, type: 'success' | 'info' | 'warning') => void;
@@ -182,6 +183,155 @@ export default function DiseaseDetectionView({ showToast }: DiseaseDetectionView
       setIsScanning(false);
       setScanProgressLabel('');
     }, 1500);
+  };
+
+  const downloadPDFReport = () => {
+    if (!activeScan) return;
+
+    try {
+      const doc = new jsPDF();
+
+      // Top Header styling
+      doc.setFillColor(16, 185, 129); // Emerald-600
+      doc.rect(0, 0, 210, 38, 'F');
+
+      doc.setTextColor(255, 255, 255);
+      doc.setFont('helvetica', 'bold');
+      doc.setFontSize(22);
+      doc.text('AgroMind AI', 15, 22);
+
+      doc.setFontSize(9);
+      doc.setFont('helvetica', 'normal');
+      doc.text('PRECISION AGRONOMIST DECISION SUPPORT ADVISORY', 15, 29);
+
+      // Date stamp
+      doc.setFontSize(9);
+      const today = new Date().toLocaleDateString('en-US', {
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit'
+      });
+      doc.text(`Report Date: ${today}`, 135, 22);
+
+      // Body Section
+      doc.setTextColor(15, 23, 42); // slate-900
+      doc.setFontSize(15);
+      doc.setFont('helvetica', 'bold');
+      doc.text('CROP HEALTH HEALTH DIAGNOSIS SUMMARY', 15, 50);
+
+      // Draw Separator Line
+      doc.setDrawColor(226, 232, 240); // slate-200
+      doc.setLineWidth(0.5);
+      doc.line(15, 54, 195, 54);
+
+      // Parameters Grid
+      doc.setFontSize(11);
+      doc.setFont('helvetica', 'bold');
+      doc.text('Target Crop Group:', 15, 65);
+      doc.setFont('helvetica', 'normal');
+      doc.text(activeScan.crop, 60, 65);
+
+      doc.setFont('helvetica', 'bold');
+      doc.text('Identified Pathology:', 15, 75);
+      doc.setFont('helvetica', 'normal');
+      if (activeScan.status === 'Healthy') {
+        doc.setTextColor(16, 185, 129); // Emerald for healthy
+      } else {
+        doc.setTextColor(220, 38, 38); // Red-600 for disease
+      }
+      doc.text(activeScan.disease, 60, 75);
+
+      doc.setTextColor(15, 23, 42); // Reset slug
+      doc.setFont('helvetica', 'bold');
+      doc.text('Match Confidence:', 15, 85);
+      doc.setFont('helvetica', 'normal');
+      doc.text(`${activeScan.confidence}% Match Criteria`, 60, 85);
+
+      doc.setFont('helvetica', 'bold');
+      doc.text('System Action Status:', 15, 95);
+      doc.setFont('helvetica', 'normal');
+      doc.text(activeScan.status, 60, 95);
+
+      let currentY = 110;
+
+      // Symptoms block
+      if (activeScan.symptoms) {
+        doc.setFont('helvetica', 'bold');
+        doc.setFontSize(12);
+        doc.text('Leaf Analysis Symptoms:', 15, currentY);
+        currentY += 6;
+        
+        doc.setFont('helvetica', 'normal');
+        doc.setFontSize(10);
+        doc.setTextColor(71, 85, 105); // slate-600
+        const symptomsText = doc.splitTextToSize(activeScan.symptoms, 180);
+        doc.text(symptomsText, 15, currentY);
+        currentY += (symptomsText.length * 5) + 10;
+      }
+
+      // Treatments block
+      if (activeScan.treatment && activeScan.treatment.length > 0) {
+        doc.setTextColor(15, 23, 42);
+        doc.setFont('helvetica', 'bold');
+        doc.setFontSize(12);
+        doc.text('Recommended Actionable Treatments:', 15, currentY);
+        currentY += 6;
+        
+        doc.setFont('helvetica', 'normal');
+        doc.setFontSize(10);
+        doc.setTextColor(71, 85, 105);
+        activeScan.treatment.forEach((t) => {
+          const treatText = doc.splitTextToSize(`• ${t}`, 180);
+          doc.text(treatText, 15, currentY);
+          currentY += (treatText.length * 5) + 2;
+        });
+        currentY += 8;
+      }
+
+      // Preventions block
+      if (activeScan.prevention && activeScan.prevention.length > 0) {
+        doc.setTextColor(15, 23, 42);
+        doc.setFont('helvetica', 'bold');
+        doc.setFontSize(12);
+        doc.text('Suggested Long-Term Prevention Protocols:', 15, currentY);
+        currentY += 6;
+        
+        doc.setFont('helvetica', 'normal');
+        doc.setFontSize(10);
+        doc.setTextColor(71, 85, 105);
+        activeScan.prevention.forEach((p) => {
+          const prevText = doc.splitTextToSize(`• ${p}`, 180);
+          doc.text(prevText, 15, currentY);
+          currentY += (prevText.length * 5) + 2;
+        });
+      }
+
+      // Decorative bottom footer background
+      doc.setFillColor(248, 250, 252); // slate-50
+      doc.rect(0, 268, 210, 29, 'F');
+
+      doc.setDrawColor(241, 245, 249); // slate-100
+      doc.line(0, 268, 210, 268);
+
+      doc.setTextColor(100, 116, 139); // slate-500
+      doc.setFontSize(8);
+      doc.setFont('helvetica', 'normal');
+      const footerMsg = "AgroMind Decision-support output. This advisory sheet represents mock computer vision pathology and Gemini integration recommendations designed in the AgroMind AI ecosystem. Please verify extreme toxicological control operations alongside credentialed regional agronomical agencies.";
+      const splitFooter = doc.splitTextToSize(footerMsg, 180);
+      doc.text(splitFooter, 15, 275);
+
+      doc.save(`AgroMind_Report_${activeScan.crop.toLowerCase()}_${Date.now()}.pdf`);
+      if (showToast) {
+        showToast(`Successfully compiled PDF Summary for ${activeScan.crop}! Downloading now.`, 'success');
+      }
+    } catch (err) {
+      console.error(err);
+      if (showToast) {
+        showToast('Failsafe summary format compilation failed.', 'warning');
+      }
+    }
   };
 
   return (
@@ -423,6 +573,16 @@ export default function DiseaseDetectionView({ showToast }: DiseaseDetectionView
                 </div>
                 <CloudLightning className="text-sky-600" size={24} />
               </div>
+
+              {/* PDF Download Button */}
+              <button
+                onClick={downloadPDFReport}
+                className="w-full bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-white font-bold py-3 px-4 rounded-xl text-xs flex items-center justify-center gap-2 cursor-pointer shadow-md shadow-emerald-600/15 hover:shadow-lg hover:shadow-emerald-600/20 active:scale-[0.99] transition-all"
+                title="Download highly detailed PDF disease diagnostic summary"
+              >
+                <FileText size={15} />
+                <span>Export Simplified PDF Report</span>
+              </button>
 
             </div>
           ) : (
