@@ -15,7 +15,8 @@ import {
   Cpu, 
   RefreshCw, 
   MapPin, 
-  Clock 
+  Clock,
+  LayoutDashboard
 } from 'lucide-react';
 import { SectorStat, ActiveTab, IrrigationZone } from '../types';
 
@@ -229,6 +230,7 @@ export default function DashboardView({
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-gray-150 pb-5">
         <div>
           <h1 className="text-3xl font-display-lg font-bold text-gray-900 tracking-tight flex items-center gap-2">
+            <LayoutDashboard className="text-emerald-600 shrink-0" size={28} />
             {activeSector} Overview
           </h1>
           <p className="text-gray-500 font-body-md mt-1">

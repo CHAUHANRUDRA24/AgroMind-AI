@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { 
   Sprout, 
+  LayoutDashboard,
   Activity, 
   BrainCircuit, 
   Bot, 
@@ -18,7 +19,9 @@ import {
   Info,
   Calculator,
   CheckCircle,
-  AlertTriangle
+  AlertTriangle,
+  Sun,
+  Moon
 } from 'lucide-react';
 
 // Import Types
@@ -40,6 +43,33 @@ export default function App() {
   const [activeTab, setActiveTab] = useState<ActiveTab>('dashboard');
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isAlertBannerVisible, setIsAlertBannerVisible] = useState(true);
+
+  // Theme states
+  const [theme, setTheme] = useState<'light' | 'dark'>(() => {
+    try {
+      return (localStorage.getItem('agromind-theme') as 'light' | 'dark') || 'light';
+    } catch {
+      return 'light';
+    }
+  });
+
+  const toggleTheme = () => {
+    const nextTheme = theme === 'light' ? 'dark' : 'light';
+    setTheme(nextTheme);
+    try {
+      localStorage.setItem('agromind-theme', nextTheme);
+    } catch (e) {
+      console.warn("Storage write failed:", e);
+    }
+  };
+
+  useEffect(() => {
+    if (theme === 'dark') {
+      document.documentElement.classList.add('dark');
+    } else {
+      document.documentElement.classList.remove('dark');
+    }
+  }, [theme]);
 
   // App-wide customized settings parameters
   const [appSettings, setAppSettings] = useState<AppSettings>({
@@ -219,7 +249,7 @@ export default function App() {
 
   // Nav Items array
   const navItems = [
-    { id: 'dashboard' as const, label: 'Dashboard', icon: Activity },
+    { id: 'dashboard' as const, label: 'Dashboard', icon: LayoutDashboard },
     { id: 'detection' as const, label: 'Leaf Analyzer', icon: BrainCircuit },
     { id: 'fertilizer' as const, label: 'NPK Calculator', icon: Calculator },
     { id: 'advisory' as const, label: 'Risk Advisory', icon: AlertTriangle },
@@ -324,18 +354,29 @@ export default function App() {
       <div className="flex-1 flex overflow-hidden">
         
         {/* Desktop Sidebar Navigation Panel */}
-        <aside className="hidden lg:flex w-64 bg-slate-900 border-r border-slate-800 text-slate-300 flex-col justify-between p-5 z-20 shadow-md">
+        <aside className={`hidden lg:flex w-64 flex-col justify-between p-5 z-20 shadow-md transition-colors duration-200 ${
+          theme === 'dark' 
+            ? 'bg-slate-900 border-r border-slate-800 text-slate-300' 
+            : 'bg-white border-r border-slate-200 text-slate-700'
+        }`}>
           <div className="space-y-6">
             {/* App logo brand */}
-            <div className="flex items-center gap-2.5 pb-2 border-b border-slate-800">
-              <div className="w-9 h-9 rounded-xl bg-gradient-to-tr from-emerald-500 to-teal-600 flex items-center justify-center text-white shadow-md shadow-emerald-500/10">
+            <button 
+              onClick={() => handleNavClick('dashboard')}
+              className={`flex items-center gap-2.5 pb-3 border-b w-full text-left transition-colors cursor-pointer group hover:opacity-90 ${
+                theme === 'dark' ? 'border-slate-800' : 'border-slate-100'
+              }`}
+            >
+              <div className="w-9 h-9 rounded-xl bg-gradient-to-tr from-emerald-500 to-teal-600 flex items-center justify-center text-white shadow-md shadow-emerald-500/10 group-hover:scale-105 transition-transform">
                 <Sprout size={20} />
               </div>
               <div>
-                <h1 className="text-md font-bold font-display-lg text-white leading-tight tracking-wide">AgroMind AI</h1>
-                <p className="text-[10px] text-emerald-400 font-semibold font-mono uppercase tracking-widest mt-0.5">&gt; PRECISION</p>
+                <h1 className={`text-md font-bold font-display-lg leading-tight tracking-wide transition-colors ${
+                  theme === 'dark' ? 'text-white' : 'text-slate-905'
+                }`}>AgroMind AI</h1>
+                <p className="text-[10px] text-emerald-500 font-semibold font-mono uppercase tracking-widest mt-0.5">&gt; PRECISION</p>
               </div>
-            </div>
+            </button>
 
             {/* Nav list */}
             <nav className="space-y-1.5 flex flex-col">
@@ -349,7 +390,9 @@ export default function App() {
                     className={`flex items-center gap-3 px-3 py-2.5 rounded-xl font-bold text-xs select-none cursor-pointer transition-all ${
                       isActive 
                         ? 'bg-emerald-600 text-white shadow-sm shadow-emerald-600/30 font-extrabold' 
-                        : 'text-slate-400 hover:text-white hover:bg-slate-800'
+                        : theme === 'dark'
+                          ? 'text-slate-400 hover:text-white hover:bg-slate-800'
+                          : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100'
                     }`}
                   >
                     <Icon size={16} />
@@ -361,13 +404,19 @@ export default function App() {
           </div>
 
           {/* Sidebar Footer block showing connected Status */}
-          <div className="pt-4 border-t border-slate-800 space-y-3.5">
-            <div className="flex items-center gap-2.5 p-2 bg-slate-800/40 border border-slate-800/80 rounded-xl text-xs">
-              <div className="p-1 rounded-md bg-emerald-500/10 text-emerald-400">
+          <div className={`pt-4 border-t space-y-3.5 ${theme === 'dark' ? 'border-slate-800' : 'border-slate-100'}`}>
+            <div className={`flex items-center gap-2.5 p-2 rounded-xl text-xs border ${
+              theme === 'dark' 
+                ? 'bg-slate-800/40 border-slate-800 text-slate-300' 
+                : 'bg-slate-50 border-slate-150 text-slate-700'
+            }`}>
+              <div className="p-1 rounded-md bg-emerald-500/10 text-emerald-500">
                 <Cpu size={14} className="animate-pulse" />
               </div>
               <div className="flex-1 truncate">
-                <p className="font-bold text-white text-[10px] uppercase font-mono tracking-wider">Mesh Node: Active</p>
+                <p className={`font-bold text-[10px] uppercase font-mono tracking-wider ${
+                  theme === 'dark' ? 'text-white' : 'text-slate-905'
+                }`}>Mesh Node: Active</p>
                 <p className="text-[9px] text-slate-400 truncate">{appSettings.farmName}</p>
               </div>
             </div>
@@ -378,37 +427,67 @@ export default function App() {
         <div className="flex-1 flex flex-col min-w-0 overflow-y-auto">
           
           {/* Top header navigation bar (Mobile & Search) */}
-          <header className="bg-white border-b border-slate-100 py-3.5 px-4 md:px-6 flex items-center justify-between sticky top-0 z-10 shadow-xs">
+          <header className={`border-b transition-colors duration-200 py-3.5 px-4 md:px-6 flex items-center justify-between sticky top-0 z-10 shadow-xs ${
+            theme === 'dark' ? 'bg-slate-900 border-slate-800' : 'bg-white border-slate-100'
+          }`}>
             {/* Left Header */}
             <div className="flex items-center gap-3">
               <button
                 onClick={() => setIsMobileMenuOpen(true)}
-                className="lg:hidden p-1.5 text-slate-600 hover:bg-slate-50 border border-slate-200 rounded-lg cursor-pointer"
+                className={`lg:hidden p-1.5 rounded-lg cursor-pointer transition-all ${
+                  theme === 'dark' ? 'text-slate-300 hover:bg-slate-850 border border-slate-800' : 'text-slate-600 hover:bg-slate-50 border border-slate-200'
+                }`}
               >
                 <Menu size={18} />
               </button>
               <div className="flex items-end gap-1.5">
-                <span className="font-bold text-xs bg-slate-100 text-slate-700 font-mono px-2 py-0.5 rounded uppercase">{activeTab}</span>
+                <button
+                  onClick={() => handleNavClick('dashboard')}
+                  className="group flex items-center gap-1 cursor-pointer"
+                  title="Go to Dashboard"
+                >
+                  <LayoutDashboard size={14} className="text-emerald-500 group-hover:scale-110 transition-transform" />
+                  <span className={`font-bold text-xs font-mono px-2 py-0.5 rounded uppercase select-none ${
+                    theme === 'dark' ? 'bg-slate-800 text-slate-300 group-hover:text-emerald-400' : 'bg-slate-100 text-slate-700 group-hover:text-emerald-600'
+                  }`}>{activeTab}</span>
+                </button>
               </div>
             </div>
 
             {/* Right Header notifications */}
             <div className="flex items-center gap-3.5">
+              {/* Dynamic Theme Toggle Action Button */}
+              <button
+                onClick={toggleTheme}
+                className={`p-1.5 rounded-xl cursor-pointer transition-all flex items-center justify-center ${
+                  theme === 'dark' 
+                    ? 'text-amber-400 hover:text-amber-300 hover:bg-slate-800' 
+                    : 'text-slate-500 hover:text-emerald-600 hover:bg-slate-100'
+                }`}
+                title={theme === 'dark' ? "Switch to Light Mode" : "Switch to Dark Mode"}
+              >
+                {theme === 'dark' ? <Sun size={18} /> : <Moon size={18} />}
+              </button>
+
               <button 
                 onClick={() => handleNavClick('settings')}
-                className="p-1.5 text-gray-500 hover:text-emerald-600 hover:bg-emerald-50 rounded-lg cursor-pointer transition-all"
+                className={`p-1.5 rounded-xl cursor-pointer transition-all ${
+                  theme === 'dark' ? 'text-gray-400 hover:text-white hover:bg-slate-800' : 'text-gray-500 hover:text-emerald-600 hover:bg-emerald-50'
+                }`}
                 title="System Settings"
               >
                 <SettingsIcon size={18} />
               </button>
-              <div className="w-px h-5 bg-slate-200" />
+              <div className={`w-px h-5 ${theme === 'dark' ? 'bg-slate-800' : 'bg-slate-200'}`} />
               <div className="flex items-center gap-2.5">
-                <div className="w-8 h-8 rounded-full bg-slate-100 border border-slate-200/50 flex items-center justify-center font-bold text-xs text-slate-700">
+                <div className={`w-8 h-8 rounded-full flex items-center justify-center font-bold text-xs select-none border ${
+                  theme === 'dark' ? 'bg-slate-800 border-slate-700 text-slate-300' : 'bg-slate-100 border-slate-200/50 text-slate-700'
+                }`}>
                   ET
                 </div>
                 <div className="hidden md:block">
-                  <p className="text-xs font-bold text-gray-900 leading-tight">Elias Thorne</p>
-                  <p className="text-[9px] text-gray-400 mt-0.5">Master Agronomist</p>
+                  <p className={`text-xs font-bold leading-tight ${theme === 'dark' ? 'text-white' : 'text-gray-900'}`}>Elias Thorne</p>
+                  <p className={`text-[9px] mt-0.5 ${theme === 'dark' ? 'text-gray-400' : 'text-gray-400'}`}>Master Agronomist</p>
                 </div>
               </div>
             </div>
@@ -451,19 +530,32 @@ export default function App() {
               animate={{ x: 0 }}
               exit={{ x: '-100%' }}
               transition={{ type: 'spring', damping: 25, stiffness: 220 }}
-              className="absolute left-0 top-0 bottom-0 w-64 bg-slate-900 border-r border-slate-800 text-slate-300 p-5 flex flex-col justify-between"
+              className={`absolute left-0 top-0 bottom-0 w-64 p-5 flex flex-col justify-between border-r transition-colors duration-200 ${
+                theme === 'dark' 
+                  ? 'bg-slate-900 border-slate-800 text-slate-300' 
+                  : 'bg-white border-slate-200 text-slate-700'
+              }`}
             >
               <div className="space-y-6">
-                <div className="flex items-center justify-between border-b border-slate-800 pb-3">
-                  <div className="flex items-center gap-2">
+                <div className={`flex items-center justify-between border-b pb-3 ${
+                  theme === 'dark' ? 'border-slate-800' : 'border-slate-100'
+                }`}>
+                  <button 
+                    onClick={() => handleNavClick('dashboard')}
+                    className="flex items-center gap-2 text-left cursor-pointer"
+                  >
                     <div className="w-8 h-8 rounded-lg bg-gradient-to-tr from-emerald-500 to-teal-600 flex items-center justify-center text-white">
                       <Sprout size={18} />
                     </div>
-                    <span className="font-bold text-md text-white font-display-lg leading-tight">AgroMind AI</span>
-                  </div>
+                    <span className={`font-bold text-md font-display-lg leading-tight ${
+                      theme === 'dark' ? 'text-white' : 'text-slate-905'
+                    }`}>AgroMind AI</span>
+                  </button>
                   <button 
                     onClick={() => setIsMobileMenuOpen(false)}
-                    className="p-1 hover:bg-slate-800 rounded-lg text-slate-400 hover:text-white cursor-pointer"
+                    className={`p-1 rounded-lg cursor-pointer ${
+                      theme === 'dark' ? 'hover:bg-slate-800 text-slate-400 hover:text-white' : 'hover:bg-slate-100 text-slate-500 hover:text-slate-800'
+                    }`}
                   >
                     <X size={18} />
                   </button>
@@ -480,7 +572,9 @@ export default function App() {
                         className={`flex items-center gap-3 px-3 py-2.5 rounded-xl font-bold text-xs select-none cursor-pointer transition-all ${
                           isActive 
                             ? 'bg-emerald-600 text-white font-black shadow shadow-emerald-600/30' 
-                            : 'text-slate-400 hover:text-white hover:bg-slate-800'
+                            : theme === 'dark'
+                              ? 'text-slate-400 hover:text-white hover:bg-slate-800'
+                              : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100'
                         }`}
                       >
                         <Icon size={16} />
@@ -491,8 +585,10 @@ export default function App() {
                 </nav>
               </div>
 
-              <div className="border-t border-slate-800 pt-3">
-                <p className="text-[10px] text-gray-400 text-center uppercase font-mono font-bold tracking-widest">Mesh Node Online</p>
+              <div className={`border-t pt-3 ${theme === 'dark' ? 'border-slate-800' : 'border-slate-100'}`}>
+                <p className={`text-[10px] text-center uppercase font-mono font-bold tracking-widest ${
+                  theme === 'dark' ? 'text-gray-400' : 'text-slate-500'
+                }`}>Mesh Node Online</p>
               </div>
             </motion.aside>
           </div>
